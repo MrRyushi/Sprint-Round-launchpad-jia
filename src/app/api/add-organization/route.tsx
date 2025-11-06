@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     tier,
     image,
     creator: user.email,
+    status: "active",
     orgID: guid(),
     createdAt: new Date(),
   });
