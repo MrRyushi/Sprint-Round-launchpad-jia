@@ -1,5 +1,6 @@
 "use client";
 
+import "../lib/styles/tailwind.css";  
 import "../lib/styles/animations.scss";
 import "../lib/styles/login.scss";
 import "../lib/styles/chat-styles.scss";
@@ -7,6 +8,7 @@ import "../lib/styles/analysis.scss";
 import "../lib/styles/whitecloak.scss";
 import "../lib/styles/globals.scss";
 import "../lib/styles/compose-email.scss";
+import 'antd/dist/reset.css';
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";

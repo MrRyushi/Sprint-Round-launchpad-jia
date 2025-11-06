@@ -6,7 +6,11 @@ export default function CustomDropdown(props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-        <div className="dropdown w-100">
+        <div className="dropdown w-100" style={{
+                      fontSize: 16,
+                      fontWeight: 500,
+                      color: "#717680",
+                    }}>
           <button
             disabled={settingList.length === 0}
             className="dropdown-btn fade-in-bottom"
