@@ -11,6 +11,7 @@ import axios from "axios";
 import CareerActionModal from "./CareerActionModal";
 import FullScreenLoadingAnimation from "./FullScreenLoadingAnimation";
 import { Steps } from "antd";
+import ReviewCareer from "./ReviewCareer";
 // Setting List icons
 const screeningSettingList = [
   {
@@ -52,13 +53,10 @@ const formSteps = [
     title: "Career Details & Team Access",
   },
   {
-    title: "CV Review & Pre-screening",
+    title: "CV Review & Pre-Screening",
   },
   {
     title: "AI Interview Setup",
-  },
-  {
-    title: "Pipeline Stages",
   },
   {
     title: "Review Career",
@@ -78,6 +76,7 @@ export default function CareerForm({
   const [current, setCurrent] = useState(0);
   const [jobTitle, setJobTitle] = useState(career?.jobTitle || "");
   const [description, setDescription] = useState(career?.description || "");
+  const [secretPrompt, setSecretPrompt] = useState("");
   const [workSetup, setWorkSetup] = useState(career?.workSetup || "");
   const [workSetupRemarks, setWorkSetupRemarks] = useState(
     career?.workSetupRemarks || ""
@@ -134,6 +133,22 @@ export default function CareerForm({
       },
     ]
   );
+
+  const preScreeningQuestionsSuggestion = [
+    {
+      title: "Notice Period",
+      question: "How long is your notice period?",
+    },
+    {
+      title: "Work Setup",
+      question: "How often are you willing to report to the office each week?",
+    },
+    {
+      title: "Asking Salary",
+      question: "How much is your expected monthly salary?",
+    },
+  ];
+
   const [country, setCountry] = useState(career?.country || "Philippines");
   const [province, setProvince] = useState(career?.province || "");
   const [city, setCity] = useState(career?.location || "");
@@ -488,7 +503,8 @@ export default function CareerForm({
           </div>
         </div>
       )}
-      <Steps size="small" current={0} items={formSteps} />
+      <Steps size="small" current={current} items={formSteps} />
+
       <div
         style={{
           display: "flex",
@@ -498,777 +514,958 @@ export default function CareerForm({
           gap: 16,
           alignItems: "flex-start",
           marginTop: 16,
+          marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            width: "75%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
-          {/*Career Information*/}
-          <div className="">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  paddingLeft: 5,
-                }}
-              >
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  1. Career Information
-                </span>
-              </div>
-              <div className="layered-card-content space-y-2">
-                <div className="space-y-2">
-                  <span
-                    style={{ fontSize: 14, fontWeight: 700, color: "#181D27" }}
-                    className="block"
-                  >
-                    Basic Information
-                  </span>
-                  <span
-                    style={{ fontSize: 14, fontWeight: 500, color: "#414651" }}
-                    className="block"
-                  >
-                    Job Title
-                  </span>
-                  <input
-                    value={jobTitle}
-                    className="form-control"
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 500,
-                      color: "#717680",
-                    }}
-                    placeholder="Enter job title"
-                    onChange={(e) => {
-                      setJobTitle(e.target.value || "");
-                    }}
-                  ></input>
-                </div>
-
-                <div>
-                  <span
-                    style={{ fontSize: 14, fontWeight: 700, color: "#181D27" }}
-                  >
-                    Work Setting
-                  </span>
-                  <div className="flex flex-row gap-4">
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        Employment Type
-                      </span>
-                      <CustomDropdown
-                        onSelectSetting={(employmentType) => {
-                          setEmploymentType(employmentType);
-                        }}
-                        screeningSetting={employmentType}
-                        settingList={employmentTypeOptions}
-                        placeholder="Choose Employment Type"
-                      />
-                    </div>
-
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        Arrangement
-                      </span>
-                      <CustomDropdown
-                        onSelectSetting={(setting) => {
-                          setWorkSetup(setting);
-                        }}
-                        screeningSetting={workSetup}
-                        settingList={workSetupOptions}
-                        placeholder="Choose work arrangement"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <span
-                    style={{ fontSize: 14, fontWeight: 700, color: "#181D27" }}
-                  >
-                    Location
-                  </span>
-                  <div className="flex flex-row gap-4">
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        Country
-                      </span>
-                      <CustomDropdown
-                        onSelectSetting={(setting) => {
-                          setCountry(setting);
-                        }}
-                        screeningSetting={country}
-                        settingList={[]}
-                        placeholder="Select Country"
-                      />
-                    </div>
-
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        State / Province
-                      </span>
-                      <CustomDropdown
-                        onSelectSetting={(province) => {
-                          setProvince(province);
-                          const provinceObj = provinceList.find(
-                            (p) => p.name === province
-                          );
-                          const cities =
-                            philippineCitiesAndProvinces.cities.filter(
-                              (city) => city.province === provinceObj.key
-                            );
-                          setCityList(cities);
-                          setCity(cities[0].name);
-                        }}
-                        screeningSetting={province}
-                        settingList={provinceList}
-                        placeholder="Choose State / Province"
-                      />
-                    </div>
-
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        City
-                      </span>
-                      <CustomDropdown
-                        onSelectSetting={(city) => {
-                          setCity(city);
-                        }}
-                        screeningSetting={city}
-                        settingList={cityList}
-                        placeholder="Choose City"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <span
-                    style={{ fontSize: 14, fontWeight: 700, color: "#181D27" }}
-                  >
-                    Salary
-                  </span>
-                  <div className="flex flex-row gap-4">
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        Minimum Salary
-                      </span>
-                      <div style={{ position: "relative" }}>
-                        <span
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            color: "#6c757d",
-                            fontSize: "16px",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          P
-                        </span>
-                        <input
-                          type="number"
-                          className="form-control"
-                          style={{ paddingLeft: "28px" }}
-                          placeholder="0"
-                          min={0}
-                          value={minimumSalary}
-                          onChange={(e) => {
-                            setMinimumSalary(e.target.value || "");
-                          }}
-                        />
-                        <span
-                          style={{
-                            position: "absolute",
-                            right: "30px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            color: "#6c757d",
-                            fontSize: "16px",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          PHP
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 w-full">
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 500,
-                          color: "#414651",
-                        }}
-                        className="block"
-                      >
-                        Maximum Salary
-                      </span>
-                      <div style={{ position: "relative" }}>
-                        <span
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            color: "#6c757d",
-                            fontSize: "16px",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          P
-                        </span>
-                        <input
-                          type="number"
-                          className="form-control"
-                          style={{ paddingLeft: "28px" }}
-                          placeholder="0"
-                          min={0}
-                          value={maximumSalary}
-                          onChange={(e) => {
-                            setMaximumSalary(e.target.value || "");
-                          }}
-                        ></input>
-                        <span
-                          style={{
-                            position: "absolute",
-                            right: "30px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            color: "#6c757d",
-                            fontSize: "16px",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          PHP
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/*<span>Job Title</span>
-                <input
-                  value={jobTitle}
-                  className="form-control"
-                  placeholder="Enter job title"
-                  onChange={(e) => {
-                    setJobTitle(e.target.value || "");
-                  }}
-                ></input>
-                <span>Description</span>
-                <RichTextEditor setText={setDescription} text={description} />*/}
-              </div>
-            </div>
-          </div>
-
-          <div className="">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  paddingLeft: 5,
-                }}
-              >
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  2. Job Description
-                </span>
-              </div>
-              <div className="layered-card-content">
-                <span>Description</span>
-                <RichTextEditor setText={setDescription} text={description} />*
-              </div>
-            </div>
-          </div>
-
-          {/*
-          <InterviewQuestionGeneratorV2
-            questions={questions}
-            setQuestions={(questions) => setQuestions(questions)}
-            jobTitle={jobTitle}
-            description={description}
-          />
-
-          <div className="layered-card-outer">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    backgroundColor: "#181D27",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <i
-                    className="la la-cog"
-                    style={{ color: "#FFFFFF", fontSize: 20 }}
-                  ></i>
-                </div>
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  Settings
-                </span>
-              </div>
-              <div className="layered-card-content">
-                <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-                  <i
-                    className="la la-id-badge"
-                    style={{ color: "#414651", fontSize: 20 }}
-                  ></i>
-                  <span>Screening Setting</span>
-                </div>
-                <CustomDropdown
-                  onSelectSetting={(setting) => {
-                    setScreeningSetting(setting);
-                  }}
-                  screeningSetting={screeningSetting}
-                  settingList={screeningSettingList}
-                />
-                <span>
-                  This settings allows Jia to automatically endorse candidates
-                  who meet the chosen criteria.
-                </span>
+        {current === 0 && (
+          <div
+            style={{
+              width: "75%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {/*Career Details & Team Access*/}
+            <div className="">
+              <div className="layered-card-middle">
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "row",
-                    justifyContent: "space-between",
-                    gap: 8,
-                  }}
-                >
-                  <div
-                    style={{ display: "flex", flexDirection: "row", gap: 8 }}
-                  >
-                    <i
-                      className="la la-video"
-                      style={{ color: "#414651", fontSize: 20 }}
-                    ></i>
-                    <span>Require Video Interview</span>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      gap: 8,
-                    }}
-                  >
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={requireVideo}
-                        onChange={() => setRequireVideo(!requireVideo)}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                    <span>{requireVideo ? "Yes" : "No"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="layered-card-outer">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    backgroundColor: "#181D27",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <i
-                    className="la la-ellipsis-h"
-                    style={{ color: "#FFFFFF", fontSize: 20 }}
-                  ></i>
-                </div>
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  Additional Information
-                </span>
-              </div>
-              <div className="layered-card-content">
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  Work Setting
-                </span>
-                <span>Employment Type</span>
-                <CustomDropdown
-                  onSelectSetting={(employmentType) => {
-                    setEmploymentType(employmentType);
-                  }}
-                  screeningSetting={employmentType}
-                  settingList={employmentTypeOptions}
-                  placeholder="Select Employment Type"
-                />
-
-                <span>Work Setup Arrangement</span>
-                <CustomDropdown
-                  onSelectSetting={(setting) => {
-                    setWorkSetup(setting);
-                  }}
-                  screeningSetting={workSetup}
-                  settingList={workSetupOptions}
-                  placeholder="Select Work Setup"
-                />
-
-                <span>Work Setup Remarks</span>
-                <input
-                  className="form-control"
-                  placeholder="Additional remarks about work setup (optional)"
-                  value={workSetupRemarks}
-                  onChange={(e) => {
-                    setWorkSetupRemarks(e.target.value || "");
-                  }}
-                ></input>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span
-                    style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                  >
-                    Salary
-                  </span>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      gap: 8,
-                      minWidth: "130px",
-                    }}
-                  >
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={salaryNegotiable}
-                        onChange={() => setSalaryNegotiable(!salaryNegotiable)}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                    <span>{salaryNegotiable ? "Negotiable" : "Fixed"}</span>
-                  </div>
-                </div>
-
-                <span>Minimum Salary</span>
-                <div style={{ position: "relative" }}>
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: "12px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#6c757d",
-                      fontSize: "16px",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    P
-                  </span>
-                  <input
-                    type="number"
-                    className="form-control"
-                    style={{ paddingLeft: "28px" }}
-                    placeholder="0"
-                    min={0}
-                    value={minimumSalary}
-                    onChange={(e) => {
-                      setMinimumSalary(e.target.value || "");
-                    }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: "30px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#6c757d",
-                      fontSize: "16px",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    PHP
-                  </span>
-                </div>
-
-                <span>Maximum Salary</span>
-                <div style={{ position: "relative" }}>
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: "12px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#6c757d",
-                      fontSize: "16px",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    P
-                  </span>
-                  <input
-                    type="number"
-                    className="form-control"
-                    style={{ paddingLeft: "28px" }}
-                    placeholder="0"
-                    min={0}
-                    value={maximumSalary}
-                    onChange={(e) => {
-                      setMaximumSalary(e.target.value || "");
-                    }}
-                  ></input>
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: "30px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#6c757d",
-                      fontSize: "16px",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    PHP
-                  </span>
-                </div>
-
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  Location
-                </span>
-
-                <span>Country</span>
-                <CustomDropdown
-                  onSelectSetting={(setting) => {
-                    setCountry(setting);
-                  }}
-                  screeningSetting={country}
-                  settingList={[]}
-                  placeholder="Select Country"
-                />
-
-                <span>State / Province</span>
-                <CustomDropdown
-                  onSelectSetting={(province) => {
-                    setProvince(province);
-                    const provinceObj = provinceList.find(
-                      (p) => p.name === province
-                    );
-                    const cities = philippineCitiesAndProvinces.cities.filter(
-                      (city) => city.province === provinceObj.key
-                    );
-                    setCityList(cities);
-                    setCity(cities[0].name);
-                  }}
-                  screeningSetting={province}
-                  settingList={provinceList}
-                  placeholder="Select State / Province"
-                />
-
-                <span>City</span>
-                <CustomDropdown
-                  onSelectSetting={(city) => {
-                    setCity(city);
-                  }}
-                  screeningSetting={city}
-                  settingList={cityList}
-                  placeholder="Select City"
-                />
-              </div>
-            </div>
-          </div>*/}
-        </div>
-
-        <div className="">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  paddingLeft: 5,
-                }}
-              >
-                <span
-                  style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                >
-                  3. Team Access
-                </span>
-              </div>
-              <div className="layered-card-content">
-                <span>Description</span>
-                <RichTextEditor setText={setDescription} text={description} />*
-              </div>
-            </div>
-          </div>
-
-        {/* Put tips below this line */}
-        <div
-          style={{
-            width: "25%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
-          <div className="">
-            <div className="layered-card-middle">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  paddingLeft: 5,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
                     alignItems: "center",
                     gap: 8,
                     paddingLeft: 5,
                   }}
                 >
-                  <img
-                    src="/iconsV3/tips-lightbulb.svg"
-                    alt="Tips Icon"
-                    width={16}
-                    height={16}
-                  />
                   <span
                     style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
                   >
-                    Tips
+                    1. Career Information
                   </span>
                 </div>
+                <div className="layered-card-content space-y-2">
+                  <div className="space-y-2">
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#181D27",
+                      }}
+                      className="block"
+                    >
+                      Basic Information
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "#414651",
+                      }}
+                      className="block"
+                    >
+                      Job Title
+                    </span>
+                    <input
+                      value={jobTitle}
+                      className="form-control"
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#717680",
+                      }}
+                      placeholder="Enter job title"
+                      onChange={(e) => {
+                        setJobTitle(e.target.value || "");
+                      }}
+                    ></input>
+                  </div>
+
+                  <div>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#181D27",
+                      }}
+                    >
+                      Work Setting
+                    </span>
+                    <div className="flex flex-row gap-4">
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          Employment Type
+                        </span>
+                        <CustomDropdown
+                          onSelectSetting={(employmentType) => {
+                            setEmploymentType(employmentType);
+                          }}
+                          screeningSetting={employmentType}
+                          settingList={employmentTypeOptions}
+                          placeholder="Choose Employment Type"
+                        />
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          Arrangement
+                        </span>
+                        <CustomDropdown
+                          onSelectSetting={(setting) => {
+                            setWorkSetup(setting);
+                          }}
+                          screeningSetting={workSetup}
+                          settingList={workSetupOptions}
+                          placeholder="Choose work arrangement"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#181D27",
+                      }}
+                    >
+                      Location
+                    </span>
+                    <div className="flex flex-row gap-4">
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          Country
+                        </span>
+                        <CustomDropdown
+                          onSelectSetting={(setting) => {
+                            setCountry(setting);
+                          }}
+                          screeningSetting={country}
+                          settingList={[]}
+                          placeholder="Select Country"
+                        />
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          State / Province
+                        </span>
+                        <CustomDropdown
+                          onSelectSetting={(province) => {
+                            setProvince(province);
+                            const provinceObj = provinceList.find(
+                              (p) => p.name === province
+                            );
+                            const cities =
+                              philippineCitiesAndProvinces.cities.filter(
+                                (city) => city.province === provinceObj.key
+                              );
+                            setCityList(cities);
+                            setCity(cities[0].name);
+                          }}
+                          screeningSetting={province}
+                          settingList={provinceList}
+                          placeholder="Choose State / Province"
+                        />
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          City
+                        </span>
+                        <CustomDropdown
+                          onSelectSetting={(city) => {
+                            setCity(city);
+                          }}
+                          screeningSetting={city}
+                          settingList={cityList}
+                          placeholder="Choose City"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#181D27",
+                      }}
+                    >
+                      Salary
+                    </span>
+                    <div className="flex flex-row gap-4">
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          Minimum Salary
+                        </span>
+                        <div style={{ position: "relative" }}>
+                          <span
+                            style={{
+                              position: "absolute",
+                              left: "12px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#6c757d",
+                              fontSize: "16px",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            P
+                          </span>
+                          <input
+                            type="number"
+                            className="form-control"
+                            style={{ paddingLeft: "28px" }}
+                            placeholder="0"
+                            min={0}
+                            value={minimumSalary}
+                            onChange={(e) => {
+                              setMinimumSalary(e.target.value || "");
+                            }}
+                          />
+                          <span
+                            style={{
+                              position: "absolute",
+                              right: "30px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#6c757d",
+                              fontSize: "16px",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            PHP
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <span
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#414651",
+                          }}
+                          className="block"
+                        >
+                          Maximum Salary
+                        </span>
+                        <div style={{ position: "relative" }}>
+                          <span
+                            style={{
+                              position: "absolute",
+                              left: "12px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#6c757d",
+                              fontSize: "16px",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            P
+                          </span>
+                          <input
+                            type="number"
+                            className="form-control"
+                            style={{ paddingLeft: "28px" }}
+                            placeholder="0"
+                            min={0}
+                            value={maximumSalary}
+                            onChange={(e) => {
+                              setMaximumSalary(e.target.value || "");
+                            }}
+                          ></input>
+                          <span
+                            style={{
+                              position: "absolute",
+                              right: "30px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              color: "#6c757d",
+                              fontSize: "16px",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            PHP
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="layered-card-content">
-                <p
-                  style={{ fontSize: 14, color: "#717680", fontWeight: 500 }}
-                  className="text-small"
+            </div>
+
+            <div className="">
+              <div className="layered-card-middle">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 5,
+                  }}
                 >
-                  <span style={{ fontWeight: "600", color: "#181D27" }}>
-                    Use clear, standard job titles
-                  </span>{" "}
-                  for better searchability (e.g., “Software Engineer” instead of
-                  “Code Ninja” or “Tech Rockstar”).
-                </p>
-                <p
-                  style={{ fontSize: 14, color: "#717680", fontWeight: 500 }}
-                  className="text-small"
-                >
-                  <span style={{ fontWeight: "600", color: "#181D27" }}>
-                    Avoid abbreviations
-                  </span>{" "}
-                  or internal role codes that applicants may not understand
-                  (e.g., use “QA Engineer” instead of “QE II” or “QA-TL”).
-                </p>
-                <p
-                  style={{ fontSize: 14, color: "#717680", fontWeight: 500 }}
-                  className="text-small"
-                >
-                  <span style={{ fontWeight: "600", color: "#181D27" }}>
-                    Keep it concise
-                  </span>{" "}
-                  {"–"} job titles should be no more than a few words{" "}
-                  {"(2–4 max)"}, avoiding fluff or marketing terms.
-                </p>
+                  <span
+                    style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
+                  >
+                    2. Job Description
+                  </span>
+                </div>
+                <div className="layered-card-content">
+                  <span>Description</span>
+                  <RichTextEditor
+                    setText={setDescription}
+                    text={description}
+                    placeholder={"Enter description"}
+                  />
+                  *
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {current === 1 && (
+          <div
+            style={{
+              width: "75%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {/*CV Review & Pre-Screening*/}
+            <div className="">
+              <div className="layered-card-middle">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 5,
+                  }}
+                >
+                  <span
+                    style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
+                  >
+                    1. CV Review Settings
+                  </span>
+                </div>
+                <div className="layered-card-content space-y-2">
+                  <div className="space-y-2">
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#181D27",
+                      }}
+                      className="block"
+                    >
+                      CV Screening
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#414651",
+                      }}
+                      className="block"
+                    >
+                      Jia automatically endorses candidates who meet the chosen
+                      criteria.
+                    </span>
+                    <div style={{ width: "50%" }}>
+                      <CustomDropdown
+                        onSelectSetting={(screeningSetting) => {
+                          setScreeningSetting(screeningSetting);
+                        }}
+                        screeningSetting={screeningSetting}
+                        settingList={screeningSettingList}
+                        placeholder="Choose Screening Setting"
+                      />
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <div>
+                    <div className="flex space-x-3">
+                      <img
+                        src="/iconsV3/secretPrompt.svg"
+                        alt="Tips Icon"
+                        width={16}
+                        height={16}
+                      />
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "#181D27",
+                        }}
+                      >
+                        CV Secret Prompt{" "}
+                        <span style={{ color: "#717680" }}>(optional)</span>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 w-full">
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "#414651",
+                        }}
+                        className="block"
+                      >
+                        Secret Prompts give you extra control over {"Jia’s"}{" "}
+                        evaluation style, complementing her accurate assessment
+                        of requirements from the job description.
+                      </span>
+                      <RichTextEditor
+                        setText={setSecretPrompt}
+                        text={secretPrompt}
+                        placeholder={
+                          "Enter a secret prompt (e.g. Give higher fit scores to candidates who participate in hackatons or competitions.)"
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="">
+              <div className="layered-card-middle">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 5,
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span
+                    style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
+                    className="block"
+                  >
+                    2. Pre-Screening Questions{" "}
+                    <span style={{ color: "#717680", fontWeight: 500 }}>
+                      (optional)
+                    </span>
+                  </span>
+                  <div className="">
+                    <button
+                      style={{
+                        fontWeight: 700,
+                        color: "white",
+                        fontSize: 14,
+                        background: "#181D27",
+                        borderRadius: 999,
+                      }}
+                      className="px-3 py-2 flex flex-row space-x-2 items-center"
+                    >
+                      <img
+                        src="/iconsV3/add.svg"
+                        alt="Add Icon"
+                        width={16}
+                        height={16}
+                        className=""
+                      />
+                      <span className="">Add Custom</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="layered-card-content">
+                  <span>No pre-screening questions added yet</span>
+                  <hr />
+                  <span
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 500,
+                      color: "#181D27",
+                    }}
+                    className="block"
+                  >
+                    Suggested Pre-screening Questions
+                  </span>
+                  {preScreeningQuestionsSuggestion.map((question, index) => (
+                    <div key={index} className="flex flex-row justify-between">
+                      <div className="">
+                        <span
+                          style={{
+                            fontWeight: 500,
+                            color: "#414651",
+                            fontSize: 14,
+                          }}
+                        >
+                          {question.title}
+                        </span>
+                        <span
+                          style={{
+                            fontWeight: 500,
+                            color: "#717680",
+                            fontSize: 14,
+                          }}
+                          className="block"
+                        >
+                          {question.question}
+                        </span>
+                      </div>
+                      <div>
+                        <button
+                          style={{
+                            fontWeight: 700,
+                            color: "#414651",
+                            fontSize: 14,
+                            border: "1px solid #D5D7DA",
+                            paddingTop: 8,
+                            paddingBottom: 8,
+                            paddingLeft: 14,
+                            paddingRight: 14,
+                            borderRadius: 999,
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {current === 2 && (
+          <div
+            style={{
+              width: "75%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {/*AI Interview Setup*/}
+            <div className="">
+              <div className="layered-card-middle">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 5,
+                  }}
+                >
+                  <span
+                    style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
+                  >
+                    1. AI Interview Settings
+                  </span>
+                </div>
+                <div className="layered-card-content space-y-2">
+                  <div className="space-y-2">
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#181D27",
+                      }}
+                      className="block"
+                    >
+                      AI Interview Screening
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#414651",
+                      }}
+                      className="block"
+                    >
+                      Jia automatically endorses candidates who meet the chosen
+                      criteria.
+                    </span>
+                    <div style={{ width: "50%" }}>
+                      <CustomDropdown
+                        onSelectSetting={(screeningSetting) => {
+                          setScreeningSetting(screeningSetting);
+                        }}
+                        screeningSetting={screeningSetting}
+                        settingList={screeningSettingList}
+                        placeholder="Choose Screening Setting"
+                      />
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <div className="space-y-2">
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#181D27",
+                      }}
+                      className="block"
+                    >
+                      Require Video on Interview
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: "#414651",
+                      }}
+                      className="block"
+                    >
+                      Require canidates to keep their camera on. Recordings will
+                      appear on their analysis page.
+                    </span>
+                    <div className="flex flex-row justify-between">
+                      <div className="flex flex-row items-center gap-2">
+                        <img
+                          src="/iconsV3/video.svg"
+                          alt="Video Icon"
+                          width={16}
+                          height={16}
+                          className="pb-1"
+                        />
+                        <label>Require Video Interview</label>
+                      </div>
+
+                      <div className="flex flex-row items-center border space-x-3">
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            checked={requireVideo}
+                            onChange={() => setRequireVideo(!requireVideo)}
+                          />
+                          <span className="slider round"></span>
+                        </label>
+                        <span className="pb-2">
+                          {requireVideo ? "Yes" : "No"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <div>
+                    <div className="flex space-x-3">
+                      <img
+                        src="/iconsV3/secretPrompt.svg"
+                        alt="Tips Icon"
+                        width={16}
+                        height={16}
+                      />
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "#181D27",
+                        }}
+                      >
+                        AI Interview Secret Prompt{" "}
+                        <span style={{ color: "#717680" }}>(optional)</span>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 w-full">
+                      <span
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "#414651",
+                        }}
+                        className="block"
+                      >
+                        Secret Prompts give you extra control over {"Jia’s"}{" "}
+                        evaluation style, complementing her accurate assessment
+                        of requirements from the job description.
+                      </span>
+                      <RichTextEditor
+                        setText={setSecretPrompt}
+                        text={secretPrompt}
+                        placeholder={
+                          "Enter a secret prompt (e.g. Treat candidates who speak in Taglish, English, or Tagalog equally. Focus on clarity, coherence, and confidence rather than language preference or accent.)"
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <InterviewQuestionGeneratorV2
+              questions={questions}
+              setQuestions={(questions) => setQuestions(questions)}
+              jobTitle={jobTitle}
+              description={description}
+            />
+          </div>
+        )}
+
+        {current === 3 && (
+          <ReviewCareer
+            jobTitle={jobTitle}
+            employmentType={employmentType}
+            workArrangement={workSetup}
+            country={country}
+            province={province}
+            city={city}
+            minimumSalary={minimumSalary}
+            maximumSalary={maximumSalary}
+            description={description}
+            screeningSetting={screeningSetting}
+            secretPrompt={secretPrompt}
+          />
+        )}
+
+        {/* Put tips below this line */}
+        {current !== 3 && (
+          <div
+            style={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <div className="">
+              <div className="layered-card-middle">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    paddingLeft: 5,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      paddingLeft: 5,
+                    }}
+                  >
+                    <img
+                      src="/iconsV3/tips-lightbulb.svg"
+                      alt="Tips Icon"
+                      width={16}
+                      height={16}
+                    />
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: "#181D27",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Tips
+                    </span>
+                  </div>
+                </div>
+                {/*Tips Content*/}
+                <div className="layered-card-content">
+                  {current == 0 && (
+                    <div className="">
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Use clear, standard job titles
+                        </span>{" "}
+                        for better searchability (e.g., “Software Engineer”
+                        instead of “Code Ninja” or “Tech Rockstar”).
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Avoid abbreviations
+                        </span>{" "}
+                        or internal role codes that applicants may not
+                        understand (e.g., use “QA Engineer” instead of “QE II”
+                        or “QA-TL”).
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Keep it concise
+                        </span>{" "}
+                        {"–"} job titles should be no more than a few words{" "}
+                        {"(2–4 max)"}, avoiding fluff or marketing terms.
+                      </p>
+                    </div>
+                  )}
+
+                  {current == 1 && (
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Add a Secret Prompt
+                        </span>{" "}
+                        to fine-tune how Jia scores and evaluates submitted CVs.
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Add pre-screening questions
+                        </span>{" "}
+                        to collect key details such as notice period, work
+                        setup, or salary expectations to guide your review and
+                        candidate discussions.
+                      </p>
+                    </div>
+                  )}
+
+                  {current == 2 && (
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Add a Secret Prompt
+                        </span>{" "}
+                        to fine-tune how Jia scores and evaluates submitted CVs.
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          color: "#717680",
+                          fontWeight: 500,
+                        }}
+                        className="text-small"
+                      >
+                        <span style={{ fontWeight: "600", color: "#181D27" }}>
+                          Use "Generate Questions"
+                        </span>{" "}
+                        to quickly create tailored interview questions, then
+                        refine or mix them with your own for balanced results
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="flex flex-row justify-end gap-4 mb-4"
+        style={{ width: "75%" }}
+      >
+        {current > 0 && (
+          <button
+            onClick={() => {
+              setCurrent((prev) => prev - 1);
+            }}
+            style={{ borderRadius: 10 }}
+            className="border rounded-full px-4 py-2 hover:bg-gray-50"
+          >
+            Previous
+          </button>
+        )}
+        {current < 3 && (
+          <button
+            onClick={() => {
+              setCurrent((prev) => prev + 1);
+            }}
+            style={{ borderRadius: 10 }}
+            className="border rounded-full px-4 py-2 hover:bg-gray-50"
+          >
+            Next
+          </button>
+        )}
       </div>
       {showSaveModal && (
         <CareerActionModal

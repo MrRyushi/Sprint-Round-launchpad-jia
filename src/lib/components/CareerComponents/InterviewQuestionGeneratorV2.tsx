@@ -335,7 +335,7 @@ export default function (props) {
         console.log("[Question Generator Fetch Prompt Error]", err);
       });
 
-    setQuestionGenPrompt(configData.question_gen_prompt.prompt);
+    setQuestionGenPrompt(configData?.question_gen_prompt.prompt);
   }
 
   useEffect(() => {
@@ -343,7 +343,7 @@ export default function (props) {
   }, []);
 
   return (
-    <div className="layered-card-outer">
+    <div className="">
         <div className="layered-card-middle">
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8 }}>
