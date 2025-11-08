@@ -27,6 +27,22 @@ const screeningSettingList = [
     icon: "la la-times",
   },
 ];
+
+const aiScreeningSettingList = [
+  {
+    name: "Good Fit and above",
+    icon: "la la-check",
+  },
+  {
+    name: "Only Strong Fit",
+    icon: "la la-check-double",
+  },
+  {
+    name: "No Automatic Promotion",
+    icon: "la la-times",
+  },
+];
+
 const workSetupOptions = [
   {
     name: "Fully Remote",
@@ -63,6 +79,21 @@ const formSteps = [
   },
 ];
 
+const preScreeningQuestionsSuggestion = [
+  {
+    title: "Notice Period",
+    question: "How long is your notice period?",
+  },
+  {
+    title: "Work Setup",
+    question: "How often are you willing to report to the office each week?",
+  },
+  {
+    title: "Asking Salary",
+    question: "How much is your expected monthly salary?",
+  },
+];
+
 export default function CareerForm({
   career,
   formType,
@@ -77,12 +108,17 @@ export default function CareerForm({
   const [jobTitle, setJobTitle] = useState(career?.jobTitle || "");
   const [description, setDescription] = useState(career?.description || "");
   const [secretPrompt, setSecretPrompt] = useState("");
+  const [aiSecretPrompt, setAiSecretPrompt] = useState("");
+  const [preScreeningQuestions, setPreScreeningQuestions] = useState([]);
   const [workSetup, setWorkSetup] = useState(career?.workSetup || "");
   const [workSetupRemarks, setWorkSetupRemarks] = useState(
     career?.workSetupRemarks || ""
   );
   const [screeningSetting, setScreeningSetting] = useState(
     career?.screeningSetting || "Good Fit and above"
+  );
+  const [aiScreeningSetting, setAIScreeningSetting] = useState(
+    career?.aiScreeningSetting || "Good Fit and above"
   );
   const [employmentType, setEmploymentType] = useState(
     career?.employmentType || "Full-Time"
@@ -134,21 +170,6 @@ export default function CareerForm({
     ]
   );
 
-  const preScreeningQuestionsSuggestion = [
-    {
-      title: "Notice Period",
-      question: "How long is your notice period?",
-    },
-    {
-      title: "Work Setup",
-      question: "How often are you willing to report to the office each week?",
-    },
-    {
-      title: "Asking Salary",
-      question: "How much is your expected monthly salary?",
-    },
-  ];
-
   const [country, setCountry] = useState(career?.country || "Philippines");
   const [province, setProvince] = useState(career?.province || "");
   const [city, setCity] = useState(career?.location || "");
@@ -157,6 +178,7 @@ export default function CareerForm({
   const [showSaveModal, setShowSaveModal] = useState("");
   const [isSavingCareer, setIsSavingCareer] = useState(false);
   const savingCareerRef = useRef(false);
+  const formId = career?._id || "new-career-draft";
 
   const isFormValid = () => {
     return (
@@ -166,6 +188,102 @@ export default function CareerForm({
       workSetup?.trim().length > 0
     );
   };
+
+  // Save form data to localStorage
+  const saveFormProgress = () => {
+    const formData = {
+      jobTitle,
+      description,
+      workSetup,
+      workSetupRemarks,
+      screeningSetting,
+      aiScreeningSetting,
+      employmentType,
+      requireVideo,
+      salaryNegotiable,
+      minimumSalary,
+      maximumSalary,
+      questions,
+      country,
+      province,
+      city,
+      secretPrompt,
+      aiSecretPrompt,
+      currentStep: current, // Save the current step
+    };
+    localStorage.setItem(`career-form-${formId}`, JSON.stringify(formData));
+  };
+
+  // Load saved form data from localStorage
+  const loadFormProgress = () => {
+    if (career?._id) return; // Don't load draft if editing an existing career
+
+    const savedData = localStorage.getItem(`career-form-${formId}`);
+    if (savedData) {
+      try {
+        const {
+          jobTitle: savedJobTitle,
+          description: savedDescription,
+          workSetup: savedWorkSetup,
+          workSetupRemarks: savedWorkSetupRemarks,
+          screeningSetting: savedScreeningSetting,
+          aiScreeningSetting: savedAiScreeningSetting,
+          employmentType: savedEmploymentType,
+          requireVideo: savedRequireVideo,
+          salaryNegotiable: savedSalaryNegotiable,
+          minimumSalary: savedMinimumSalary,
+          maximumSalary: savedMaximumSalary,
+          questions: savedQuestions,
+          country: savedCountry,
+          province: savedProvince,
+          city: savedCity,
+          secretPrompt: savedSecretPrompt,
+          aiSecretPrompt: savedAiSecretPrompt,
+          currentStep: savedCurrentStep,
+        } = JSON.parse(savedData);
+
+        if (savedJobTitle) setJobTitle(savedJobTitle);
+        if (savedDescription) setDescription(savedDescription);
+        if (savedWorkSetup) setWorkSetup(savedWorkSetup);
+        if (savedWorkSetupRemarks) setWorkSetupRemarks(savedWorkSetupRemarks);
+        if (savedScreeningSetting) setScreeningSetting(savedScreeningSetting);
+        if (savedAiScreeningSetting)
+          setAIScreeningSetting(savedAiScreeningSetting);
+        if (savedEmploymentType) setEmploymentType(savedEmploymentType);
+        if (savedRequireVideo !== undefined) setRequireVideo(savedRequireVideo);
+        if (savedSalaryNegotiable !== undefined)
+          setSalaryNegotiable(savedSalaryNegotiable);
+        if (savedMinimumSalary) setMinimumSalary(savedMinimumSalary);
+        if (savedMaximumSalary) setMaximumSalary(savedMaximumSalary);
+        if (savedQuestions) setQuestions(savedQuestions);
+        if (savedCountry) setCountry(savedCountry);
+        if (savedProvince) setProvince(savedProvince);
+        if (savedCity) setCity(savedCity);
+        if (savedSecretPrompt) setSecretPrompt(savedSecretPrompt);
+        if (savedAiSecretPrompt) setAiSecretPrompt(savedAiSecretPrompt);
+        if (savedCurrentStep !== undefined) setCurrent(savedCurrentStep);
+      } catch (error) {
+        console.error("Error loading saved form data:", error);
+      }
+    }
+  };
+
+  // Clear saved form data
+  const clearFormProgress = () => {
+    localStorage.removeItem(`career-form-${formId}`);
+  };
+
+  // Load saved data on component mount
+  useEffect(() => {
+    loadFormProgress();
+
+    // Clear saved data when component unmounts if the form was submitted
+    return () => {
+      if (formType === "add" && !isSavingCareer) {
+        clearFormProgress();
+      }
+    };
+  }, []);
 
   const updateCareer = async (status: string) => {
     if (
@@ -261,6 +379,9 @@ export default function CareerForm({
       return;
     }
 
+    // Save current progress before final submission
+    saveFormProgress();
+
     if (!savingCareerRef.current) {
       setIsSavingCareer(true);
       savingCareerRef.current = true;
@@ -349,6 +470,47 @@ export default function CareerForm({
     parseProvinces();
   }, [career]);
 
+  const saveAndContinue = () => {
+    // Career Details and Team Access Page
+    if (current === 0) {
+      if (
+        !jobTitle ||
+        !employmentType ||
+        !workSetup ||
+        !country ||
+        !province ||
+        !city ||
+        !minimumSalary ||
+        !maximumSalary ||
+        !description
+      ) {
+        errorToast("Please fill in all fields before saving!", 1300);
+        return;
+      }
+    }
+    if (current === 1) {
+      if (
+        !screeningSetting
+      ) {
+        errorToast("Please fill in all fields before saving!", 1300);
+        return;
+      }
+    }
+    if (current === 2) {
+      if (
+        !aiScreeningSetting || 
+        !requireVideo || 
+        !questions.some((q) => q.questions.length > 0)
+      ) {
+        errorToast("Please fill in all fields before saving!", 1300);
+        return;
+      }
+    }
+    setCurrent((prev) => prev + 1);
+
+    saveCareer()
+  };
+
   return (
     <div className="col">
       {formType === "add" ? (
@@ -392,30 +554,59 @@ export default function CareerForm({
             >
               Save as Unpublished
             </button>
-            <button
-              disabled={!isFormValid() || isSavingCareer}
-              style={{
-                width: "fit-content",
-                background:
-                  !isFormValid() || isSavingCareer ? "#D5D7DA" : "black",
-                color: "#fff",
-                border: "1px solid #E9EAEB",
-                padding: "8px 16px",
-                borderRadius: "60px",
-                cursor:
-                  !isFormValid() || isSavingCareer ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => {
-                confirmSaveCareer("active");
-              }}
-            >
-              <i
-                className="la la-check-circle"
-                style={{ color: "#fff", fontSize: 20, marginRight: 8 }}
-              ></i>
-              Save as Published
-            </button>
+            {current < 3 ? (
+              <button
+                style={{
+                  width: "fit-content",
+                  background: "black",
+                  color: "#fff",
+                  border: "1px solid #E9EAEB",
+                  padding: "8px 16px",
+                  borderRadius: "60px",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  //confirmSaveCareer("active");
+                  saveAndContinue();
+                }}
+                form="careerForm"
+                type="submit"
+              >
+                <i
+                  className="la la-check-circle"
+                  style={{ color: "#fff", fontSize: 20, marginRight: 8 }}
+                ></i>
+                Save and Continue
+              </button>
+            ) : (
+              <button
+                disabled={!isFormValid() || isSavingCareer}
+                style={{
+                  width: "fit-content",
+                  background:
+                    !isFormValid() || isSavingCareer ? "#D5D7DA" : "black",
+                  color: "#fff",
+                  border: "1px solid #E9EAEB",
+                  padding: "8px 16px",
+                  borderRadius: "60px",
+                  cursor:
+                    !isFormValid() || isSavingCareer
+                      ? "not-allowed"
+                      : "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => {
+                  confirmSaveCareer("active");
+                }}
+              >
+                <i
+                  className="la la-check-circle"
+                  style={{ color: "#fff", fontSize: 20, marginRight: 8 }}
+                ></i>
+                Publish
+              </button>
+            )}
           </div>
         </div>
       ) : (
@@ -578,6 +769,7 @@ export default function CareerForm({
                       onChange={(e) => {
                         setJobTitle(e.target.value || "");
                       }}
+                      required
                     ></input>
                   </div>
 
@@ -610,6 +802,7 @@ export default function CareerForm({
                           screeningSetting={employmentType}
                           settingList={employmentTypeOptions}
                           placeholder="Choose Employment Type"
+                          required
                         />
                       </div>
 
@@ -631,6 +824,7 @@ export default function CareerForm({
                           screeningSetting={workSetup}
                           settingList={workSetupOptions}
                           placeholder="Choose work arrangement"
+                          required
                         />
                       </div>
                     </div>
@@ -665,6 +859,7 @@ export default function CareerForm({
                           screeningSetting={country}
                           settingList={[]}
                           placeholder="Select Country"
+                          required
                         />
                       </div>
 
@@ -695,6 +890,7 @@ export default function CareerForm({
                           screeningSetting={province}
                           settingList={provinceList}
                           placeholder="Choose State / Province"
+                          required
                         />
                       </div>
 
@@ -716,6 +912,7 @@ export default function CareerForm({
                           screeningSetting={city}
                           settingList={cityList}
                           placeholder="Choose City"
+                          required
                         />
                       </div>
                     </div>
@@ -767,6 +964,7 @@ export default function CareerForm({
                             onChange={(e) => {
                               setMinimumSalary(e.target.value || "");
                             }}
+                            required
                           />
                           <span
                             style={{
@@ -900,7 +1098,7 @@ export default function CareerForm({
                   </span>
                 </div>
                 <div className="layered-card-content space-y-2">
-                  <div className="space-y-2">
+                  <div className="space-y-2 border-bottom pb-3">
                     <span
                       style={{
                         fontSize: 16,
@@ -933,8 +1131,6 @@ export default function CareerForm({
                       />
                     </div>
                   </div>
-
-                  <hr />
 
                   <div>
                     <div className="flex space-x-3">
@@ -1026,8 +1222,14 @@ export default function CareerForm({
                   </div>
                 </div>
                 <div className="layered-card-content">
-                  <span>No pre-screening questions added yet</span>
-                  <hr />
+                  {preScreeningQuestions.length < 1 ? (
+                    <span className="border-bottom pb-3">
+                      No pre-screening questions added yet
+                    </span>
+                  ) : (
+                    <div></div>
+                  )}
+
                   <span
                     style={{
                       fontSize: 16,
@@ -1114,7 +1316,7 @@ export default function CareerForm({
                   </span>
                 </div>
                 <div className="layered-card-content space-y-2">
-                  <div className="space-y-2">
+                  <div className="space-y-2 border-bottom pb-3">
                     <span
                       style={{
                         fontSize: 16,
@@ -1138,19 +1340,17 @@ export default function CareerForm({
                     </span>
                     <div style={{ width: "50%" }}>
                       <CustomDropdown
-                        onSelectSetting={(screeningSetting) => {
-                          setScreeningSetting(screeningSetting);
+                        onSelectSetting={(aiScreeningSetting) => {
+                          setAIScreeningSetting(aiScreeningSetting);
                         }}
-                        screeningSetting={screeningSetting}
-                        settingList={screeningSettingList}
+                        screeningSetting={aiScreeningSetting}
+                        settingList={aiScreeningSettingList}
                         placeholder="Choose Screening Setting"
                       />
                     </div>
                   </div>
 
-                  <hr />
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 border-bottom pb-3">
                     <span
                       style={{
                         fontSize: 16,
@@ -1184,7 +1384,7 @@ export default function CareerForm({
                         <label>Require Video Interview</label>
                       </div>
 
-                      <div className="flex flex-row items-center border space-x-3">
+                      <div className="flex flex-row items-center space-x-3">
                         <label className="switch">
                           <input
                             type="checkbox"
@@ -1199,8 +1399,6 @@ export default function CareerForm({
                       </div>
                     </div>
                   </div>
-
-                  <hr />
 
                   <div>
                     <div className="flex space-x-3">
@@ -1236,8 +1434,8 @@ export default function CareerForm({
                         of requirements from the job description.
                       </span>
                       <RichTextEditor
-                        setText={setSecretPrompt}
-                        text={secretPrompt}
+                        setText={setAiSecretPrompt}
+                        text={aiSecretPrompt}
                         placeholder={
                           "Enter a secret prompt (e.g. Treat candidates who speak in Taglish, English, or Tagalog equally. Focus on clarity, coherence, and confidence rather than language preference or accent.)"
                         }
@@ -1270,6 +1468,11 @@ export default function CareerForm({
             description={description}
             screeningSetting={screeningSetting}
             secretPrompt={secretPrompt}
+            aiSecretPrompt={aiSecretPrompt}
+            aiScreeningSetting={aiScreeningSetting}
+            requireVideo={requireVideo}
+            interviewQuestionsCount={questions.length}
+            questions={questions}
           />
         )}
 
@@ -1444,7 +1647,7 @@ export default function CareerForm({
         className="flex flex-row justify-end gap-4 mb-4"
         style={{ width: "75%" }}
       >
-        {current > 0 && (
+        {/* {current > 0 && (
           <button
             onClick={() => {
               setCurrent((prev) => prev - 1);
@@ -1458,14 +1661,16 @@ export default function CareerForm({
         {current < 3 && (
           <button
             onClick={() => {
+              // Save progress before moving to next step
+              saveFormProgress();
               setCurrent((prev) => prev + 1);
             }}
             style={{ borderRadius: 10 }}
             className="border rounded-full px-4 py-2 hover:bg-gray-50"
           >
-            Next
+            Save and Continue
           </button>
-        )}
+        )} */}
       </div>
       {showSaveModal && (
         <CareerActionModal

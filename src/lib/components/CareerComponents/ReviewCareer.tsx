@@ -8,8 +8,8 @@ const ReviewCareer = (props) => {
       key: "1",
       label: "Career Details & Team Access",
       children: (
-        <div className="">
-          <div className="flex flex-col" style={{ margin: 0 }}>
+        <div className="space-y-3">
+          <div className="flex flex-col border-bottom" style={{ margin: 0 }}>
             <p
               style={{
                 fontWeight: 700,
@@ -29,7 +29,7 @@ const ReviewCareer = (props) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-x-8">
+          <div className="grid grid-cols-3 gap-x-8 mt-3 border-bottom">
             <div className="grid-cols-1">
               <p
                 style={{
@@ -71,7 +71,7 @@ const ReviewCareer = (props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-x-8">
+          <div className="grid grid-cols-3 gap-x-8 border-bottom">
             <div className="grid-cols-1">
               <p
                 style={{
@@ -92,7 +92,7 @@ const ReviewCareer = (props) => {
               </p>
             </div>
 
-            <div className="grid-cols-1">
+            <div className="grid-cols-1 border-bottom">
               <p
                 style={{
                   fontWeight: 700,
@@ -132,7 +132,7 @@ const ReviewCareer = (props) => {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-x-8">
+          <div className="grid grid-cols-3 gap-x-8 border-bottom">
             <div className="grid-cols-1">
               <p
                 style={{
@@ -199,8 +199,8 @@ const ReviewCareer = (props) => {
       key: "2",
       label: "CV Review & Pre-Screening Questions",
       children: (
-        <div>
-          <div className="flex flex-col" style={{ margin: 0 }}>
+        <div className="space-y-3">
+          <div className="flex flex-col border-bottom" style={{ margin: 0 }}>
             <p
               style={{
                 fontWeight: 700,
@@ -232,7 +232,10 @@ const ReviewCareer = (props) => {
             </p>
           </div>
 
-          <div className="flex flex-col" style={{ margin: 0 }}>
+          <div
+            className="flex flex-col border-bottom mt-3"
+            style={{ margin: 0 }}
+          >
             <p
               style={{
                 fontWeight: 700,
@@ -258,7 +261,34 @@ const ReviewCareer = (props) => {
             </p>
           </div>
 
-          <div className="flex flex-col" style={{ margin: 0 }}>
+          <div className="flex flex-row mt-3">
+            <p
+              style={{
+                fontWeight: 700,
+                fontSize: 14,
+                color: "#181D27",
+                marginRight: 8,
+              }}
+              className="block"
+            >
+              Pre-Screening Questions{" "}
+            </p>
+            <p
+              className="border px-2 block"
+              style={{ borderRadius: 999, fontSize: 12 }}
+            >
+              1{props.preScreeningQuestionsCount}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "3",
+      label: "AI Interview Setup",
+      children: (
+        <div className="space-y-3">
+          <div className="flex flex-col border-bottom">
             <p
               style={{
                 fontWeight: 700,
@@ -268,22 +298,109 @@ const ReviewCareer = (props) => {
               }}
               className=""
             >
-              Pre-Screening Questions <span style={{borderRadius: 999, border:"1px solid black", padding:4}}>{props.preScreeningQuestionsCount}</span>
+              AI Interview Screening
             </p>
-            
+            <p
+              style={{ fontWeight: 500, fontSize: 16, color: "#414651" }}
+              className=""
+            >
+              Automatically endorse candidates who are{" "}
+              <span
+                style={{
+                  color: "#175CD3",
+                  background: "#B2DDFF",
+                  borderRadius: 999,
+                  borderColor: "#B2DDFF",
+                }}
+                className="px-2 py-1"
+              >
+                {props.aiScreeningSetting}
+              </span>{" "}
+              and above
+            </p>
+          </div>
+
+          <div className="flex justify-between border-bottom">
+            <div className="">
+              <p
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#181D27",
+                  margin: 0,
+                }}
+                className="block"
+              >
+                Require Video on Interview
+              </p>
+            </div>
+            <div>
+              <p>{props.videoInterview ? "Yes ✅" : "No ❌"}</p>
+            </div>
+          </div>
+
+          <div className="border-bottom">
+            <div className="flex space-x-3">
+              <img
+                src="/iconsV3/secretPrompt.svg"
+                alt="Tips Icon"
+                width={16}
+                height={16}
+              />
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#181D27",
+                  margin: 0,
+                }}
+              >
+                AI Interview Secret Prompt{" "}
+              </span>
+            </div>
+            <p>{props.aiSecretPrompt}</p>
+          </div>
+
+          <div>
+            <div className="flex flex-row space-x-4">
+              <p
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#181D27",
+                  marginRight: 8,
+                }}
+                className="block"
+              >
+                Interview Questions
+              </p>
+              <p
+                className="border px-2"
+                style={{ borderRadius: 999, fontSize: 12 }}
+              >
+                {props.interviewQuestionsCount}
+              </p>
+            </div>
+            <div>
+              {props.questions.map((question, key) => (
+                <div key={key}>
+                  <p
+                    style={{ fontWeight: 700, fontSize: 14, color: "#414651" }}
+                  >
+                    {question.category}
+                  </p>
+
+                  {question.questions.map((q, j) => (
+                    <p key={q.id || j} style={{fontWeight: 500, fontSize: 16, color: "#414651"}}>
+                      {j + 1}. {q.question}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ),
-    },
-    {
-      key: "3",
-      label: "AI Interview Setup",
-      children: <p></p>,
-    },
-    {
-      key: "4",
-      label: "Review Career",
-      children: <p></p>,
     },
   ];
 
