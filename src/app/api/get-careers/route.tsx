@@ -17,6 +17,9 @@ export async function GET(req: Request) {
         const authUserRole = await db.collection("members").findOne({ email: userEmail, orgID });
         // Filter careers based on the user's role
         const filter: any = { orgID };
+        // Only fetch careers that are not temporary saves
+        filter.temporarySave = { $ne: true };
+
         if (authUserRole?.role === "hiring_manager" && authUserRole?.careers?.length > 0) {
             filter.id = { $in: authUserRole?.careers };
         }
@@ -124,7 +127,7 @@ export async function GET(req: Request) {
         // TODO: Improve this query by moving to Redis or a count table
         const total = await db.collection("careers").countDocuments(filter);
         const totalPages = Math.ceil(total / limit);
-        const totalActiveCareers = await db.collection("careers").countDocuments({ orgID, status: "active" });
+        const totalActiveCareers = await db.collection("careers").countDocuments({ orgID, status: "active", temporarySave: { $ne: true } });
 
         return NextResponse.json({
             careers,
