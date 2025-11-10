@@ -108,7 +108,7 @@ export default function CareerForm({
   setShowEditModal?: (show: boolean) => void;
 }) {
   const { user, orgID } = useAppContext();
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(3);
   const [jobTitle, setJobTitle] = useState(career?.jobTitle || "");
   const [description, setDescription] = useState(career?.description || "");
   const [secretPrompt, setSecretPrompt] = useState("");
@@ -580,30 +580,17 @@ export default function CareerForm({
     <div className="col">
       {formType === "add" ? (
         <div
-          style={{
-            marginBottom: "35px",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
+          className="mb-3 mt-25 lg:mt-4 px-2 flex flex-row flex-wrap justify-between items-center w-full"
         >
           <h1 style={{ fontSize: "24px", fontWeight: 550, color: "#111827" }}>
             Add new career
           </h1>
           <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: "10px",
-            }}
+            className="flex flex-row flex-wrap items-center md:gap-3 gap-2"
           >
             <button
               disabled={!isFormValid() || isSavingCareer}
               style={{
-                width: "fit-content",
                 color: "#414651",
                 background: "#fff",
                 border: "1px solid #D5D7DA",
@@ -616,13 +603,13 @@ export default function CareerForm({
               onClick={() => {
                 confirmSaveCareer("inactive");
               }}
+              className="w-full md:w-max"
             >
               Save as Unpublished
             </button>
             {current < 3 ? (
               <button
                 style={{
-                  width: "fit-content",
                   background: "black",
                   color: "#fff",
                   border: "1px solid #E9EAEB",
@@ -635,6 +622,7 @@ export default function CareerForm({
                   //confirmSaveCareer("active");
                   saveAndContinue();
                 }}
+                className="w-full md:w-max"
                 form="careerForm"
                 type="submit"
               >
@@ -759,19 +747,13 @@ export default function CareerForm({
           </div>
         </div>
       )}
+      <div className="px-2 w-full">
       <Steps size="small" current={current} items={formSteps} />
+      </div>
 
       <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          width: "100%",
-          gap: 16,
-          alignItems: "flex-start",
-          marginTop: 16,
-          marginBottom: 16,
-        }}
+      
+        className="flex flex-col-reverse md:flex-row justify-between w-100 gap-4 items-start md:my-16"
       >
         {current === 0 && (
           <CareerDetails
@@ -799,12 +781,7 @@ export default function CareerForm({
 
         {current === 1 && (
           <div
-            style={{
-              width: "75%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
+            className="w-full md:w-3/5 px-2 flex flex-col gap-8"
           >
             {/*CV Review & Pre-Screening*/}
             <div className="">
@@ -908,21 +885,14 @@ export default function CareerForm({
             <div className="">
               <div className="layered-card-middle">
                 <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    paddingLeft: 5,
-                    justifyContent: "space-between",
-                  }}
+                  className="flex flex-row items-center gap-8 pl-1 justify-between"
                 >
                   <span
                     style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
                     className="block space-x-2 flex"
                   >
                     2. Pre-Screening Questions{" "}
-                    <span style={{ color: "#717680", fontWeight: 500 }}>
+                    <span style={{ color: "#717680", fontWeight: 500}} className="">
                       (optional)
                     </span>
                     <span
@@ -969,13 +939,13 @@ export default function CareerForm({
                       <div key={q.id} className="border rounded-lg space-y-2">
                         {/* Question Title */}
                         <div
-                          className="flex flex-row p-3 gap-x-4"
+                          className="flex flex-col lg:flex-row p-3 gap-x-4 gap-y-2 lg:gap-y-0"
                           style={{ background: "#F8F9FC" }}
                         >
                           <input
                             type="text"
                             placeholder="Write your question..."
-                            className="border p-2 rounded bg-white w-2/3"
+                            className="border p-2 rounded bg-white w-full lg:w-2/3"
                             value={q.question}
                             onChange={(e) =>
                               updateQuestion(q.id, "question", e.target.value)
@@ -989,7 +959,7 @@ export default function CareerForm({
                             onChange={(e) =>
                               updateQuestion(q.id, "type", e.target.value)
                             }
-                            className="border p-2 rounded bg-white w-1/3"
+                            className="border p-2 rounded bg-white w-full lg:w-1/3"
                           >
                             {questionTypes.map((type) => (
                               <option key={type.value} value={type.value}>
@@ -1125,7 +1095,7 @@ export default function CareerForm({
                               </div>
                             </div>
                           )}
-                          <div className="flex justify-end p-4">
+                          <div className="flex justify-end xl:p-4">
                             <button
                               onClick={() => removeQuestion(q.id)}
                               style={{
@@ -1216,12 +1186,7 @@ export default function CareerForm({
 
         {current === 2 && (
           <div
-            style={{
-              width: "75%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
+           className="w-full md:w-3/5 px-2 flex flex-col gap-8"
           >
             {/*AI Interview Setup*/}
             <div className="">
@@ -1264,7 +1229,7 @@ export default function CareerForm({
                       Jia automatically endorses candidates who meet the chosen
                       criteria.
                     </span>
-                    <div style={{ width: "50%" }}>
+                    <div className="w-full lg:w-1/2">
                       <CustomDropdown
                         onSelectSetting={(aiScreeningSetting) => {
                           setAIScreeningSetting(aiScreeningSetting);
@@ -1408,12 +1373,7 @@ export default function CareerForm({
         {/* Put tips below this line */}
         {current !== 3 && (
           <div
-            style={{
-              width: "25%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
+            className="flex flex-col gap-8 w-full px-2 md:w-2/5"
           >
             <div className="">
               <div className="layered-card-middle">
@@ -1572,35 +1532,6 @@ export default function CareerForm({
         )}
       </div>
 
-      <div
-        className="flex flex-row justify-end gap-4 mb-4"
-        style={{ width: "75%" }}
-      >
-        {/* {current > 0 && (
-          <button
-            onClick={() => {
-              setCurrent((prev) => prev - 1);
-            }}
-            style={{ borderRadius: 10 }}
-            className="border rounded-full px-4 py-2 hover:bg-gray-50"
-          >
-            Previous
-          </button>
-        )}
-        {current < 3 && (
-          <button
-            onClick={() => {
-              // Save progress before moving to next step
-              saveFormProgress();
-              setCurrent((prev) => prev + 1);
-            }}
-            style={{ borderRadius: 10 }}
-            className="border rounded-full px-4 py-2 hover:bg-gray-50"
-          >
-            Save and Continue
-          </button>
-        )} */}
-      </div>
       {showSaveModal && (
         <CareerActionModal
           action={showSaveModal}

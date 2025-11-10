@@ -442,7 +442,7 @@ const ReviewCareer = (props) => {
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full px-2">
       <Collapse items={items} defaultActiveKey={["1"]} />
     </div>
   );

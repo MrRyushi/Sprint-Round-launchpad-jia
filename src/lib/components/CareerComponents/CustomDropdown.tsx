@@ -7,9 +7,8 @@ export default function CustomDropdown(props) {
 
   return (
     <div
-      className="dropdown w-100"
+      className="dropdown w-100 text-sm md:text-base"
       style={{
-        fontSize: 16,
         fontWeight: 500,
         color: "#717680",
       }}
@@ -22,7 +21,7 @@ export default function CustomDropdown(props) {
         type="button"
         onClick={() => setDropdownOpen((v) => !v)}
       >
-        <span>
+        <span className="text-start">
           <i
             className={
               settingList.find((setting) => setting.name === screeningSetting)
@@ -31,7 +30,7 @@ export default function CustomDropdown(props) {
           ></i>{" "}
           {screeningSetting?.replace("_", " ") || placeholder}
         </span>
-        <i className="la la-angle-down ml-10"></i>
+        <i className="la la-angle-down md:ml-10"></i>
       </button>
       <div
         className={`dropdown-menu w-100 mt-1 org-dropdown-anim${

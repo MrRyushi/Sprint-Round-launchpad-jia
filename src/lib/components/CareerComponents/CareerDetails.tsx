@@ -48,12 +48,7 @@ const CareerDetails = (props) => {
 
   return (
     <div
-      style={{
-        width: "75%",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
+      className="w-full md:w-3/5 px-2 flex flex-col gap-8"
     >
       {/*Career Details & Team Access*/}
       <div className="">
@@ -107,9 +102,6 @@ const CareerDetails = (props) => {
                 }}
                 required
               ></input>
-              {props.jobTitle.length === 0 && (
-                <p style={{ color: "red" }}>This field is required</p>
-              )}
             </div>
 
             <div>
@@ -179,7 +171,7 @@ const CareerDetails = (props) => {
               >
                 Location
               </span>
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-col xl:flex-row gap-4">
                 <div className="space-y-2 w-full">
                   <span
                     style={{
@@ -266,7 +258,7 @@ const CareerDetails = (props) => {
               >
                 Salary
               </span>
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-col md:flex-row gap-4">
                 <div className="space-y-2 w-full">
                   <span
                     style={{

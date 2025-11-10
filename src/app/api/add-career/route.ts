@@ -2,10 +2,18 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongoDB/mongoDB";
 import { guid } from "@/lib/Utils";
 import { ObjectId } from "mongodb";
+import {
+  sanitizeString,
+  sanitizeHTML,
+  sanitizeObject,
+  sanitizeNumber,
+  sanitizeBoolean,
+  validateLength,
+} from "@/lib/sanitization";
 
 export async function POST(request: Request) {
   try {
-    const {
+    let {
       jobTitle,
       description,
       questions,
@@ -26,7 +34,50 @@ export async function POST(request: Request) {
       country,
       province,
       employmentType,
+      preScreeningQuestions,
+      secretPrompt,
+      aiSecretPrompt,
+      aiScreeningSetting,
     } = await request.json();
+
+    // Sanitize string inputs
+    jobTitle = sanitizeString(jobTitle);
+    workSetup = sanitizeString(workSetup);
+    workSetupRemarks = sanitizeString(workSetupRemarks);
+    screeningSetting = sanitizeString(screeningSetting);
+    location = sanitizeString(location);
+    country = sanitizeString(country);
+    province = sanitizeString(province);
+    employmentType = sanitizeString(employmentType);
+    aiScreeningSetting = sanitizeString(aiScreeningSetting);
+    
+    // Sanitize HTML content (job description)
+    description = sanitizeHTML(description);
+    
+    // Sanitize prompts
+    secretPrompt = sanitizeString(secretPrompt);
+    aiSecretPrompt = sanitizeString(aiSecretPrompt);
+    
+    // Sanitize nested objects (questions, pre-screening questions)
+    questions = sanitizeObject(questions);
+    preScreeningQuestions = sanitizeObject(preScreeningQuestions);
+    lastEditedBy = sanitizeObject(lastEditedBy);
+    createdBy = sanitizeObject(createdBy);
+    
+    // Validate and sanitize numbers
+    const sanitizedMinSalary = sanitizeNumber(minimumSalary);
+    const sanitizedMaxSalary = sanitizeNumber(maximumSalary);
+    
+    // Validate booleans
+    requireVideo = sanitizeBoolean(requireVideo);
+    salaryNegotiable = sanitizeBoolean(salaryNegotiable);
+    temporarySave = sanitizeBoolean(temporarySave);
+    
+    // Validate required field lengths
+    validateLength(jobTitle, "Job title", 3, 200);
+    validateLength(description, "Job description", 10, 10000);
+    validateLength(workSetup, "Work setup", 2, 100);
+    validateLength(location, "Location", 2, 200);
     // Validate required fields
     if (!jobTitle || !description || !questions || !location || !workSetup) {
       return NextResponse.json(
@@ -100,11 +151,15 @@ export async function POST(request: Request) {
       currentStep,
       lastActivityAt: new Date(),
       salaryNegotiable,
-      minimumSalary,
-      maximumSalary,
+      minimumSalary: sanitizedMinSalary,
+      maximumSalary: sanitizedMaxSalary,
       country,
       province,
       employmentType,
+      preScreeningQuestions,
+      secretPrompt,
+      aiSecretPrompt,
+      aiScreeningSetting,
     };
 
     const result = await db.collection("careers").insertOne(career);
