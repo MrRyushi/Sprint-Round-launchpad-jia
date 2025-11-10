@@ -404,7 +404,7 @@ export default function OrganizationForm({ organization, formType }: { organizat
                             settingList={organizationTypeList}
                             />
                             <span>Description</span>
-                            <RichTextEditor setText={setDescription} text={description} />
+                            <RichTextEditor setText={setDescription} text={description} placeholder={""}/>
                         </div>
                         </div>
                     </div>
