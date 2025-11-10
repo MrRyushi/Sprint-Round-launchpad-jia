@@ -71,16 +71,32 @@ const preScreeningQuestionsSuggestion = [
   {
     title: "Notice Period",
     question: "How long is your notice period?",
+    type: "dropdown",
+    options: ["Immediately", "< 30 days", "> 30 days"],
   },
   {
     title: "Work Setup",
     question: "How often are you willing to report to the office each week?",
+    type: "dropdown",
+    options: [
+      "At most 1-2x a week",
+      "At most 3-4x a week",
+      "Open to fully onsite work",
+      "Only open to fully remote work",
+    ],
   },
   {
     title: "Asking Salary",
     question: "How much is your expected monthly salary?",
+    type: "range",
   },
 ];
+
+interface QuestionParams {
+  question?: string;
+  type?: string;
+  options?: string[];
+}
 
 export default function CareerForm({
   career,
@@ -169,6 +185,7 @@ export default function CareerForm({
   const formId = career?._id || "new-career-draft";
   const [temporarySave, setTemporarySave] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [documentId, setDocumentId] = useState("");
 
   const isFormValid = () => {
     return (
@@ -179,16 +196,20 @@ export default function CareerForm({
     );
   };
 
-  const addQuestion = () => {
+  const addQuestion = (params?: QuestionParams) => {
     setPreScreeningQuestions((prev) => [
       ...prev,
       {
         id: Date.now(),
-        question: "",
-        type: "short",
-        options: [""],
+        question: params?.question ?? "",
+        type: params?.type ?? "short",
+        options: params?.options ?? [""],
       },
     ]);
+  };
+
+  const removeQuestion = (id) => {
+    setPreScreeningQuestions((prev) => prev.filter((q) => q.id !== id));
   };
 
   const updateQuestion = (id, field, value) => {
@@ -216,6 +237,19 @@ export default function CareerForm({
     );
   };
 
+  const removeOption = (id, optionIndex) => {
+    setPreScreeningQuestions((prev) =>
+      prev.map((q) =>
+        q.id === id
+          ? {
+              ...q,
+              options: q.options.filter((_, index) => index !== optionIndex),
+            }
+          : q
+      )
+    );
+  };
+
   // Save form data to localStorage
   const saveFormProgress = () => {
     const formData = {
@@ -230,6 +264,7 @@ export default function CareerForm({
       salaryNegotiable,
       minimumSalary,
       maximumSalary,
+      preScreeningQuestions,
       questions,
       country,
       province,
@@ -248,23 +283,30 @@ export default function CareerForm({
         const data = await response.json();
         if (data?.temporarySave) {
           // Update all form states in a single batch
+          setPreScreeningQuestions(data.preScreeningQuestions);
+          setAiSecretPrompt(data.aiSecretPrompt);
+          setAIScreeningSetting(data.aiScreeningSetting);
+          setSecretPrompt(data.secretPrompt);
+          setCountry(data.country);
+          setProvince(data.province);
+          setCity(data.city);
+          setEmploymentType(data.employmentType);
+          setRequireVideo(data.requireVideo);
+          setSalaryNegotiable(data.salaryNegotiable);
+          setMinimumSalary(data.minimumSalary);
+          setMaximumSalary(data.maximumSalary);
+          setQuestions(data.questions);
+          setDocumentId(data._id);
           setJobTitle(data.jobTitle);
           setDescription(data.description);
-          setEmploymentType(data.employmentType);
           setWorkSetup(data.workSetup || "");
           setWorkSetupRemarks(data.workSetupRemarks || "");
           setScreeningSetting(data.screeningSetting || "");
           setAIScreeningSetting(data.aiScreeningSetting || "");
-          setRequireVideo(data.requireVideo ?? true);
           setSalaryNegotiable(data.salaryNegotiable ?? true);
           setMinimumSalary(data.minimumSalary || "");
           setMaximumSalary(data.maximumSalary || "");
           setQuestions(data.questions || []);
-          setCountry(data.country || "Philippines");
-          setProvince(data.province || "");
-          setCity(data.city || "");
-          setSecretPrompt(data.secretPrompt || "");
-          setAiSecretPrompt(data.aiSecretPrompt || "");
           setCurrent(data.currentStep || 0);
         }
       } catch (error) {
@@ -282,7 +324,7 @@ export default function CareerForm({
     }
   }, []);
 
-  const updateCareer = async (status: string) => {
+  const updateCareer = async (status: string, isSaveAndContinue: boolean) => {
     if (
       Number(minimumSalary) &&
       Number(maximumSalary) &&
@@ -297,7 +339,7 @@ export default function CareerForm({
       email: user.email,
     };
     const updatedCareer = {
-      _id: career._id,
+      _id: documentId || career._id,
       jobTitle,
       description,
       workSetup,
@@ -305,6 +347,12 @@ export default function CareerForm({
       questions,
       lastEditedBy: userInfoSlice,
       status,
+      secretPrompt,
+      preScreeningQuestions,
+      currentStep: isSaveAndContinue ? current + 1 : 0,
+      temporarySave: isSaveAndContinue,
+      aiScreeningSetting,
+      aiSecretPrompt,
       updatedAt: Date.now(),
       screeningSetting,
       requireVideo,
@@ -345,9 +393,11 @@ export default function CareerForm({
             style={{ color: "#039855", fontSize: 32 }}
           ></i>
         );
-        setTimeout(() => {
-          window.location.href = `/recruiter-dashboard/careers/manage/${career._id}`;
-        }, 1300);
+        if(!isSaveAndContinue){
+          setTimeout(() => {
+            window.location.href = `/recruiter-dashboard/careers/manage/${documentId || career._id}`;
+          }, 1300);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -396,6 +446,10 @@ export default function CareerForm({
         lastEditedBy: userInfoSlice,
         createdBy: userInfoSlice,
         screeningSetting,
+        preScreeningQuestions,
+        secretPrompt,
+        aiSecretPrompt,
+        aiScreeningSetting,
         orgID,
         requireVideo,
         salaryNegotiable,
@@ -418,6 +472,11 @@ export default function CareerForm({
       try {
         const response = await axios.post("/api/add-career", career);
         if (response.status === 200) {
+          // Capture the created document ID for subsequent updates
+          if (response.data?.career?._id) {
+            setDocumentId(response.data.career._id);
+          }
+          
           candidateActionToast(
             <div
               style={{
@@ -495,6 +554,8 @@ export default function CareerForm({
       if (!screeningSetting) {
         errorToast("Please fill in all fields before saving!", 1300);
         return;
+      } else {
+        updateCareer("inactive", true);
       }
     }
     if (current === 2) {
@@ -505,11 +566,11 @@ export default function CareerForm({
       ) {
         errorToast("Please fill in all fields before saving!", 1300);
         return;
+      } else {
+        updateCareer("inactive", true);
       }
     }
     setCurrent((prev) => prev + 1);
-
-    //saveCareer()
   };
 
   if (isLoading) {
@@ -666,7 +727,7 @@ export default function CareerForm({
                 whiteSpace: "nowrap",
               }}
               onClick={() => {
-                updateCareer("inactive");
+                updateCareer("inactive", false);
               }}
             >
               Save Changes as Unpublished
@@ -686,7 +747,7 @@ export default function CareerForm({
                 whiteSpace: "nowrap",
               }}
               onClick={() => {
-                updateCareer("active");
+                updateCareer("active", false);
               }}
             >
               <i
@@ -858,11 +919,17 @@ export default function CareerForm({
                 >
                   <span
                     style={{ fontSize: 16, color: "#181D27", fontWeight: 700 }}
-                    className="block"
+                    className="block space-x-2 flex"
                   >
                     2. Pre-Screening Questions{" "}
                     <span style={{ color: "#717680", fontWeight: 500 }}>
                       (optional)
+                    </span>
+                    <span
+                      className="border-1 px-2 block pt-1"
+                      style={{ borderRadius: 999, fontSize: 12 }}
+                    >
+                      {preScreeningQuestions?.length}
                     </span>
                   </span>
                   <div className="">
@@ -875,7 +942,7 @@ export default function CareerForm({
                         borderRadius: 999,
                       }}
                       className="px-3 py-2 flex flex-row space-x-2 items-center"
-                      onClick={addQuestion}
+                      onClick={() => addQuestion()}
                     >
                       <img
                         src="/iconsV3/add.svg"
@@ -897,14 +964,14 @@ export default function CareerForm({
                     <div></div>
                   )}
 
-                  <div>
+                  <div className="space-y-3">
                     {preScreeningQuestions.map((q) => (
-                      <div
-                        key={q.id}
-                        className="border rounded-lg space-y-2"
-                      >
+                      <div key={q.id} className="border rounded-lg space-y-2">
                         {/* Question Title */}
-                        <div className="flex flex-row p-3 gap-x-4" style={{background: "#F8F9FC"}}>
+                        <div
+                          className="flex flex-row p-3 gap-x-4"
+                          style={{ background: "#F8F9FC" }}
+                        >
                           <input
                             type="text"
                             placeholder="Write your question..."
@@ -952,21 +1019,37 @@ export default function CareerForm({
                           )}
 
                           {["dropdown", "checkbox"].includes(q.type) && (
-                            <div>
+                            <div className=" space-y-3">
                               {q.options.map((opt, i) => (
-                                <div key={i} className="flex flex-row items-center gap-x-2">
-                                  <p className="flex items-center border p-2">{i + 1}.</p>
-                                  <input
-                                    
-                                    type="text"
-                                    placeholder={`Option ${i + 1}`}
-                                    className="border p-2 w-full rounded"
-                                    value={opt}
-                                    onChange={(e) =>
-                                      updateOption(q.id, i, e.target.value)
-                                    }
-                                    required
-                                  />
+                                <div
+                                  key={i}
+                                  className="flex flex-row items-center gap-x-2"
+                                >
+                                  <div className="flex flex-row w-full">
+                                    <span className=" border p-2 rounded-s-md">
+                                      {i + 1}.
+                                    </span>
+                                    <input
+                                      type="text"
+                                      placeholder={`Option ${i + 1}`}
+                                      className="border p-2 w-full rounded-e-md"
+                                      value={opt}
+                                      onChange={(e) =>
+                                        updateOption(q.id, i, e.target.value)
+                                      }
+                                      required
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={(e) => removeOption(q.id, i)}
+                                    className="border p-2 rounded"
+                                    style={{ fontSize: 9, borderRadius: 999 }}
+                                  >
+                                    <img
+                                      src="/iconsV3/x.svg"
+                                      alt="Delete Option"
+                                    />
+                                  </button>
                                 </div>
                               ))}
                               <button
@@ -981,21 +1064,86 @@ export default function CareerForm({
 
                           {q.type === "range" && (
                             <div className="flex items-center space-x-2">
-                              <input
-                                type="number"
-                                min="1"
-                                placeholder="Min"
-                                className="border p-2 w-20 rounded"
-                              />
-                              <span>to</span>
-                              <input
-                                type="number"
-                                max="10"
-                                placeholder="Max"
-                                className="border p-2 w-20 rounded"
-                              />
+                              <div className="flex flex-col w-full">
+                                <label>Minimum</label>
+                                <div
+                                  style={{
+                                    position: "relative",
+                                    display: "inline-block",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      left: "12px",
+                                      top: "50%",
+                                      transform: "translateY(-50%)",
+                                      color: "#6c757d",
+                                      fontSize: "16px",
+                                      pointerEvents: "none",
+                                    }}
+                                  >
+                                    ₱
+                                  </span>
+                                  <input
+                                    type="number"
+                                    placeholder="Min"
+                                    className="border p-2 rounded pl-5 w-full"
+                                    style={{ paddingLeft: "28px" }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col w-full">
+                                <label>Maximum</label>
+                                <div
+                                  style={{
+                                    position: "relative",
+                                    display: "inline-block",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      left: "12px",
+                                      top: "50%",
+                                      transform: "translateY(-50%)",
+                                      color: "#6c757d",
+                                      fontSize: "16px",
+                                      pointerEvents: "none",
+                                    }}
+                                  >
+                                    ₱
+                                  </span>
+                                  <input
+                                    type="number"
+                                    placeholder="Max"
+                                    className="border p-2 rounded pl-5 w-full"
+                                    style={{ paddingLeft: "28px" }}
+                                  />
+                                </div>
+                              </div>
                             </div>
                           )}
+                          <div className="flex justify-end p-4">
+                            <button
+                              onClick={() => removeQuestion(q.id)}
+                              style={{
+                                fontWeight: 700,
+                                color: "#B32318",
+                                fontSize: 14,
+                                borderRadius: 999,
+                                border: "1px solid #B32318",
+                              }}
+                              className="py-2 px-3 space-x-2 hover:bg-red-200"
+                            >
+                              <img
+                                src="/iconsv3/trash.svg"
+                                className="inline"
+                              />
+                              <span className="">Delete Question</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1047,6 +1195,13 @@ export default function CareerForm({
                             paddingRight: 14,
                             borderRadius: 999,
                           }}
+                          onClick={() =>
+                            addQuestion({
+                              question: question.question,
+                              type: question.type,
+                              options: question.options,
+                            })
+                          }
                         >
                           Add
                         </button>
@@ -1244,6 +1399,9 @@ export default function CareerForm({
             requireVideo={requireVideo}
             interviewQuestionsCount={questions.length}
             questions={questions}
+            preScreeningQuestionsCount={preScreeningQuestions.length}
+            preScreeningQuestions={preScreeningQuestions}
+            
           />
         )}
 
@@ -1446,7 +1604,7 @@ export default function CareerForm({
       {showSaveModal && (
         <CareerActionModal
           action={showSaveModal}
-          onAction={(action) => saveCareer(action, false)}
+          onAction={(action) => updateCareer(action, false)}
         />
       )}
       {isSavingCareer && (

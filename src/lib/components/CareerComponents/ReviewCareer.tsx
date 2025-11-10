@@ -261,24 +261,52 @@ const ReviewCareer = (props) => {
             </p>
           </div>
 
-          <div className="flex flex-row mt-3">
-            <p
-              style={{
-                fontWeight: 700,
-                fontSize: 14,
-                color: "#181D27",
-                marginRight: 8,
-              }}
-              className="block"
-            >
-              Pre-Screening Questions{" "}
-            </p>
-            <p
-              className="border px-2 block"
-              style={{ borderRadius: 999, fontSize: 12 }}
-            >
-              1{props.preScreeningQuestionsCount}
-            </p>
+          <div className="py-3">
+            <div className="flex flex-row">
+              <p
+                style={{
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#181D27",
+                  marginRight: 8,
+                }}
+                className="block"
+              >
+                Pre-Screening Questions{" "}
+              </p>
+              <p
+                className="border px-2 block mt-1"
+                style={{ borderRadius: 999, fontSize: 12 }}
+              >
+                {props.preScreeningQuestionsCount}
+              </p>
+            </div>
+            <ol className="list-decimal ms-8">
+              {props.preScreeningQuestions.map((question) => (
+                <li
+                  key={question.id}
+                  style={{ fontWeight: 500, fontSize: 16, color: "#414651" }}
+                >
+                  {question.question}
+                  {question.options?.length > 1 && (
+                    <ul className="list-disc ms-8">
+                      {question.options.map((q, j) => (
+                        <li
+                          key={q.id || j}
+                          style={{
+                          fontWeight: 500,
+                          fontSize: 16,
+                          color: "#414651",
+                        }}
+                      >
+                        {q}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       ),
@@ -390,11 +418,20 @@ const ReviewCareer = (props) => {
                     {question.category}
                   </p>
 
+                  <ol className="list-decimal ms-8">
                   {question.questions.map((q, j) => (
-                    <p key={q.id || j} style={{fontWeight: 500, fontSize: 16, color: "#414651"}}>
-                      {j + 1}. {q.question}
-                    </p>
+                    <li
+                      key={q.id || j}
+                      style={{
+                        fontWeight: 500,
+                        fontSize: 16,
+                        color: "#414651",
+                      }}
+                    >
+                      {q.question}
+                    </li>
                   ))}
+                  </ol>
                 </div>
               ))}
             </div>

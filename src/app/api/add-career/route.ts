@@ -107,11 +107,14 @@ export async function POST(request: Request) {
       employmentType,
     };
 
-    await db.collection("careers").insertOne(career);
+    const result = await db.collection("careers").insertOne(career);
 
     return NextResponse.json({
       message: "Career added successfully",
-      career,
+      career: {
+        ...career,
+        _id: result.insertedId,
+      },
     });
   } catch (error) {
     console.error("Error adding career:", error);
