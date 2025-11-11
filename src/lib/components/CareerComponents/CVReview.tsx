@@ -57,8 +57,7 @@ interface QuestionParams {
 }
 
 const CVReview = (props) => {
-
-    const addQuestion = (params?: QuestionParams) => {
+  const addQuestion = (params?: QuestionParams) => {
     props.setPreScreeningQuestions((prev) => [
       ...prev,
       {
@@ -342,7 +341,12 @@ const CVReview = (props) => {
                               className="border p-2 rounded"
                               style={{ fontSize: 111, borderRadius: 999 }}
                             >
-                              <img src="/iconsV3/x.svg" width={24} height={24} alt="Delete Option" />
+                              <img
+                                src="/iconsV3/x.svg"
+                                width={24}
+                                height={24}
+                                alt="Delete Option"
+                              />
                             </button>
                           </div>
                         ))}

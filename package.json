@@ -3,7 +3,8 @@
     "build": "next build",
     "clean": "rm -rf node_modules .next bun.lock next-env.d.ts",
     "dev": "next dev",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.821.0",
@@ -53,8 +54,11 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "22.15.3",
     "@types/react": "19.1.2",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
     "typescript": "5.8.3"
   }
 }
